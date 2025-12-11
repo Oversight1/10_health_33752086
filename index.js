@@ -90,7 +90,7 @@ app.post('/register', (req, res) => {
             if (err) {
                 return res.render('register', { user: null, error: "Username or email already taken." });
             }
-            res.redirect('login');
+            res.redirect('../login');
         });
     });
 });
@@ -109,7 +109,7 @@ app.post('/login', (req, res) => {
 
     if(username === 'gold' && password === 'smiths') {
          req.session.user = { id: 1, username: 'gold' };
-         return res.redirect('dashboard');
+         return res.redirect('../dashboard');
     }
 
     // Real DB lookup
@@ -157,7 +157,7 @@ app.post('/add-workout', (req, res) => {
     // 3. Add 'intensity' to the data array
     db.query(sql, [req.session.user.id, activity, duration, calories, date, notes, intensity], (err, result) => {
         if (err) throw err;
-        res.redirect('dashboard');
+        res.redirect('../dashboard');
     });
 });
 
@@ -208,7 +208,7 @@ app.post('/community/message', (req, res) => {
     const sql = "INSERT INTO messages (user_id, content) VALUES (?, ?)";
     db.query(sql, [req.session.user.id, req.body.content], (err) => {
         if (err) throw err;
-        res.redirect('/community');
+        res.redirect('../community');
     });
 });
 
@@ -232,7 +232,7 @@ app.post('/delete-workout/:id', (req, res) => {
     
     db.query(sql, [workoutId, userId], (err, result) => {
         if (err) throw err;
-        res.redirect('dashboard');
+        res.redirect('../dashboard');
     });
 });
 
