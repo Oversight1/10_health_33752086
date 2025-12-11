@@ -5,3 +5,4 @@ add_workout=http://localhost:8000/add-workout
 dashboard=http://localhost:8000/dashboard (Includes Intensity Visualisation)
 register=http://localhost:8000/register
 community=http://localhost:8000/community
+virtual_machine=https://www.doc.gold.ac.uk/usr/315/
