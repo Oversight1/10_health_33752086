@@ -109,7 +109,7 @@ app.post('/login', (req, res) => {
 
     if(username === 'gold' && password === 'smiths') {
          req.session.user = { id: 1, username: 'gold' };
-         return res.redirect('../dashboard');
+         return res.redirect('dashboard');
     }
 
     // Real DB lookup
