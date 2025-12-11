@@ -1,4 +1,4 @@
-USE health;
+USE tto001;
 
 -- Insert the required admin user 
 -- Using bycrpt
