@@ -216,7 +216,7 @@ app.post('/community/message', (req, res) => {
 // Logout Route
 app.get('/logout', (req, res) => {
     req.session.destroy();
-    res.redirect('/');
+    res.redirect('./');
 });
 
 
