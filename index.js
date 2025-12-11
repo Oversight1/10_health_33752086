@@ -26,7 +26,8 @@ const db = mysql.createConnection({
     host: 'localhost',
     user: 'tto001',      // YVM username
     password: 'MasterKey*',     //VM database password
-    database: 'tto001'   //changed this from 'health' to 'tto001'
+    database: 'tto001',  //changed this from 'health' to 'tto001'
+    socketPath: '/var/run/mysqld/mysqld.sock'
     // host: process.env.HEALTH_HOST || '127.0.0.1', //For XAMPP database
     // user: process.env.HEALTH_USER || 'health_app',
     // password: process.env.HEALTH_PASSWORD || 'qwertyuiop',

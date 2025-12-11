@@ -1,5 +1,6 @@
-CREATE DATABASE IF NOT EXISTS health;
-USE health;
+USE tto001
+
+
 
 -- Table for Users (supports hashed passwords)--------------------
 CREATE TABLE IF NOT EXISTS users (
@@ -44,7 +45,3 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create the app user as per instructions
-CREATE USER IF NOT EXISTS 'health_app'@'localhost' IDENTIFIED BY 'qwertyuiop';
-GRANT ALL PRIVILEGES ON health.* TO 'health_app'@'localhost';
-FLUSH PRIVILEGES;
