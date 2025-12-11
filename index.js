@@ -109,16 +109,16 @@ app.post('login', (req, res) => {
 
     if(username === 'gold' && password === 'smiths') {
          req.session.user = { id: 1, username: 'gold' };
-         return res.redirect('/dashboard');
+         return res.redirect('dashboard');
     }
 
     // Real DB lookup
-    res.redirect('/'); 
+    res.redirect('./'); 
 });
 
 // Dashboard (Protected Route)
 app.get('dashboard', (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
+    if (!req.session.user) return res.redirect('login');
     
     // Fetch workouts for the user
     let sql = "SELECT * FROM workouts WHERE user_id = ?";
@@ -137,12 +137,12 @@ app.listen(port, () => {
 
 //Form to add data 
 app.get('add-workout', (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
+    if (!req.session.user) return res.redirect('login');
     res.render('add-workout'); 
 });
 
 app.post('add-workout', (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
+    if (!req.session.user) return res.redirect('login');
     
     // 1. Get 'intensity' from the form body
     const { activity, duration, calories, date, notes, intensity } = req.body;

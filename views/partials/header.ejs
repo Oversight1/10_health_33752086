@@ -21,19 +21,19 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="./">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="about">About</a></li>
         
         <% if(typeof user !== 'undefined' && user) { %>
-            <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="/community">Community</a></li> <li class="nav-item"><a class="nav-link" href="/add-workout">Add Workout</a></li>
-            <li class="nav-item"><a class="nav-link text-danger" href="/logout">Logout</a></li>
+            <li class="nav-item"><a class="nav-link" href="dashboard">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="community">Community</a></li> <li class="nav-item"><a class="nav-link" href="/add-workout">Add Workout</a></li>
+            <li class="nav-item"><a class="nav-link text-danger" href="logout">Logout</a></li>
         <% } else { %>
-            <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-            <li class="nav-item"><a class="nav-link" href="/register">Register</a></li> <% } %>
+            <li class="nav-item"><a class="nav-link" href="login">Login</a></li>
+            <li class="nav-item"><a class="nav-link" href="register">Register</a></li> <% } %>
       </ul>
       
-      <form class="d-flex" action="/search" method="GET">
+      <form class="d-flex" action="search" method="GET">
         <input class="form-control me-2" type="search" name="q" placeholder="Search workouts..." aria-label="Search">
         <button class="btn btn-outline-warning" type="submit">Search</button>
       </form>
