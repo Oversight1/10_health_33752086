@@ -90,7 +90,7 @@ app.post('/register', (req, res) => {
             if (err) {
                 return res.render('register', { user: null, error: "Username or email already taken." });
             }
-            res.redirect('../login');
+            res.redirect('login');
         });
     });
 });
@@ -157,7 +157,7 @@ app.post('/add-workout', (req, res) => {
     // 3. Add 'intensity' to the data array
     db.query(sql, [req.session.user.id, activity, duration, calories, date, notes, intensity], (err, result) => {
         if (err) throw err;
-        res.redirect('../dashboard');
+        res.redirect('dashboard');
     });
 });
 
