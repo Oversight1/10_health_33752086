@@ -1,0 +1,27 @@
+<%- include('partials/header') %>
+<h2>Search Results for "<%= query %>"</h2>
+<% if(results.length > 0) { %>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Activity</th>
+                <th>Duration</th>
+                <th>Date</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% results.forEach(function(row) { %>
+                <tr>
+                    <td><%= row.activity_type %></td>
+                    <td><%= row.duration_minutes %> mins</td>
+                    <td><%= new Date(row.date_logged).toLocaleDateString() %></td>
+                    <td><%= row.notes %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+<% } else { %>
+    <div class="alert alert-info">No workouts found matching your search.</div>
+<% } %>
+<%- include('partials/footer') %>

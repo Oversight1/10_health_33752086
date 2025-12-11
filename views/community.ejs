@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark">🏆 Leaderboard (Top Minutes)</div>
+            <ul class="list-group list-group-flush">
+                <% leaderboard.forEach((entry, index) => { %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>#<%= index + 1 %> <strong><%= entry.username %></strong></span>
+                        <span class="badge bg-primary rounded-pill"><%= entry.total_minutes %> mins</span>
+                    </li>
+                <% }) %>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">💬 Community Chat</div>
+            <div class="card-body" style="height: 400px; overflow-y: scroll;">
+                <% messages.forEach(msg => { %>
+                    <div class="mb-2 border-bottom pb-2">
+                        <strong><%= msg.username %></strong> <small class="text-muted"><%= new Date(msg.created_at).toLocaleString() %></small>
+                        <p class="mb-0"><%= msg.content %></p>
+                    </div>
+                <% }) %>
+            </div>
+            <div class="card-footer">
+                <form action="/community/message" method="POST" class="d-flex">
+                    <input type="text" name="content" class="form-control me-2" placeholder="Say something..." required>
+                    <button type="submit" class="btn btn-primary">Post</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<%- include('partials/footer') %>

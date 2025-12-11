@@ -1,0 +1,134 @@
+<%- include('partials/header') %>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title">Duration Progress</h4>
+                        <canvas id="fitnessChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title">Intensity Breakdown</h4>
+                        <div style="max-height: 300px; display: flex; justify-content: center;">
+                            <canvas id="intensityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <ul class="list-group list-group-flush">
+        
+        <% if(workouts.length > 0) { %>
+            <% workouts.forEach(function(workout) { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="me-2 fs-5">
+                            <% if(workout.activity_type == 'Running') { %> 🏃
+                            <% } else if(workout.activity_type == 'Cycling') { %> 🚴
+                            <% } else if(workout.activity_type == 'Swimming') { %> 🏊
+                            <% } else if(workout.activity_type == 'Weightlifting') { %> 🏋️
+                            <% } else if(workout.activity_type == 'Yoga') { %> 🧘
+                            <% } else { %> 👟 <% } %>
+                        </span>
+                        <strong><%= workout.activity_type %></strong>
+                        <small class="text-muted ms-2"><%= new Date(workout.date_logged).toLocaleDateString() %></small>
+                    </div>
+                    
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary rounded-pill me-3"><%= workout.duration_minutes %> mins</span>
+                        
+                        <form action="/delete-workout/<%= workout.id %>" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this workout?');">
+                                &times;
+                            </button>
+                        </form>
+                    </div>
+                </li>
+            <% }); %>
+        <% } else { %>
+            <li class="list-group-item text-center text-muted">No workouts found. Start by logging one!</li>
+        <% } %>
+    </ul>
+
+<script>
+    // Preparing the data for Chart.js
+    // We strictly use EJS to inject the backend data into client-side JS
+    const workoutData = <%- JSON.stringify(workouts) %>;
+    
+    const labels = workoutData.map(w => new Date(w.date_logged).toLocaleDateString());
+    const dataPoints = workoutData.map(w => w.duration_minutes);
+
+    const ctx = document.getElementById('fitnessChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Duration (Minutes)',
+                data: dataPoints,
+                borderColor: '#FFD700',
+                backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    //Calculate Intensity Counts
+    let highCount = 0;
+    let mediumCount = 0;
+    let lowCount = 0;
+
+    workoutData.forEach(workout => {
+        // We use a safe check in case intensity is null or undefined
+        const intensity = (workout.intensity || 'Medium'); 
+        if (intensity === 'High') highCount++;
+        else if (intensity === 'Medium') mediumCount++;
+        else if (intensity === 'Low') lowCount++;
+    });
+
+    //Render the Pie Chart
+    const ctxPie = document.getElementById('intensityChart').getContext('2d');
+    new Chart(ctxPie, {
+        type: 'doughnut', // 'pie' or 'doughnut' both look great regardless
+        data: {
+            labels: ['High Intensity', 'Medium Intensity', 'Low Intensity'],
+            datasets: [{
+                data: [highCount, mediumCount, lowCount],
+                backgroundColor: [
+                    '#dc3545', // Red for High
+                    '#ffc107', // Yellow for Medium
+                    '#28a745'  // Green for Low
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // Allows us to control height via CSS
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+</script>
+
+
+
+<%- include('partials/footer') %>

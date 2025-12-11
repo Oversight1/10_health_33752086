@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+
+<div class="p-5 mb-4 bg-light rounded-3 shadow-sm text-center hero" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000;">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Welcome to GoldFit</h1>
+        <p class="col-md-8 fs-4 mx-auto">Your personal companion for tracking health, fitness, and progress.</p>
+        
+        <% if(!user) { %>
+            <a class="btn btn-dark btn-lg" href="/login">Login to Start</a>
+        <% } else { %>
+            <a class="btn btn-dark btn-lg" href="/dashboard">Go to Dashboard</a>
+        <% } %>
+    </div>
+</div>
+
+<div class="row align-items-md-stretch">
+    <div class="col-md-6">
+        <div class="h-100 p-5 text-white bg-dark rounded-3">
+            <h2>Track Your Workouts</h2>
+            <p>Log running, cycling, swimming, and more. Keep a detailed history of your exercises and monitor your calories burned.</p>
+            <a class="btn btn-outline-light" href="/about">Learn More</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="h-100 p-5 bg-light border rounded-3">
+            <h2>Visualize Progress</h2>
+            <p>See your improvements over time with our advanced interactive dashboard charts.</p>
+            <% if(user) { %>
+                <a class="btn btn-outline-secondary" href="/add-workout">Log Activity</a>
+            <% } else { %>
+                <button class="btn btn-outline-secondary" disabled>Log Activity (Login Required)</button>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
