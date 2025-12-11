@@ -208,7 +208,7 @@ app.post('/community/message', (req, res) => {
     const sql = "INSERT INTO messages (user_id, content) VALUES (?, ?)";
     db.query(sql, [req.session.user.id, req.body.content], (err) => {
         if (err) throw err;
-        res.redirect('community');
+        res.redirect('/community');
     });
 });
 
@@ -221,7 +221,7 @@ app.get('/logout', (req, res) => {
 
 
 // Delete Workout 
-app.post('delete-workout/:id', (req, res) => {
+app.post('/delete-workout/:id', (req, res) => {
     if (!req.session.user) return res.redirect('login');
 
     const workoutId = req.params.id;
