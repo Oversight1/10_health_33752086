@@ -56,17 +56,17 @@ app.get('/', (req, res) => {
 });
 
 // About Page 
-app.get('/about', (req, res) => {
+app.get('about', (req, res) => {
     res.render('about', { page: 'about' });
 });
 
 // Register GET
-app.get('/register', (req, res) => {
+app.get('register', (req, res) => {
     res.render('register', { user: req.session.user });
 });
 
 // Register POST
-app.post('/register', (req, res) => {
+app.post('register', (req, res) => {
     const { first_name, last_name, username, email, password } = req.body;
 
     //Regex Validation per instructions 
@@ -90,18 +90,18 @@ app.post('/register', (req, res) => {
             if (err) {
                 return res.render('register', { user: null, error: "Username or email already taken." });
             }
-            res.redirect('/login');
+            res.redirect('login');
         });
     });
 });
 
 // Login Page (GET)
-app.get('/login', (req, res) => {
+app.get('login', (req, res) => {
     res.render('login', { page: 'login', error: null });
 });
 
 // Login Logic (POST) 
-app.post('/login', (req, res) => {
+app.post('login', (req, res) => {
     // To make the default 'gold':'smiths' work with bcrypt, 
     // we assume the DB has the hash, OR we handle legacy plain text for that one single user.
     const { username, password } = req.body;
@@ -117,7 +117,7 @@ app.post('/login', (req, res) => {
 });
 
 // Dashboard (Protected Route)
-app.get('/dashboard', (req, res) => {
+app.get('dashboard', (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     
     // Fetch workouts for the user
@@ -136,12 +136,12 @@ app.listen(port, () => {
 
 
 //Form to add data 
-app.get('/add-workout', (req, res) => {
+app.get('add-workout', (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     res.render('add-workout'); 
 });
 
-app.post('/add-workout', (req, res) => {
+app.post('add-workout', (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     
     // 1. Get 'intensity' from the form body
@@ -157,12 +157,12 @@ app.post('/add-workout', (req, res) => {
     // 3. Add 'intensity' to the data array
     db.query(sql, [req.session.user.id, activity, duration, calories, date, notes, intensity], (err, result) => {
         if (err) throw err;
-        res.redirect('/dashboard');
+        res.redirect('dashboard');
     });
 });
 
 //Search functionality against database 
-app.get('/search', (req, res) => {
+app.get('search', (req, res) => {
     const searchTerm = req.query.q;
     //search the 'activity_type' or 'notes' fields
     const sql = "SELECT * FROM workouts WHERE activity_type LIKE ? OR notes LIKE ?";
@@ -175,8 +175,8 @@ app.get('/search', (req, res) => {
 });
 
 //Community route
-app.get('/community', (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
+app.get('community', (req, res) => {
+    if (!req.session.user) return res.redirect('login');
 
     //Get Leaderboard (Advanced SQL Aggregation)
     const sqlLeaderboard = `
@@ -208,21 +208,21 @@ app.post('/community/message', (req, res) => {
     const sql = "INSERT INTO messages (user_id, content) VALUES (?, ?)";
     db.query(sql, [req.session.user.id, req.body.content], (err) => {
         if (err) throw err;
-        res.redirect('/community');
+        res.redirect('community');
     });
 });
 
 
 // Logout Route
-app.get('/logout', (req, res) => {
+app.get('logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');
 });
 
 
 // Delete Workout 
-app.post('/delete-workout/:id', (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
+app.post('delete-workout/:id', (req, res) => {
+    if (!req.session.user) return res.redirect('login');
 
     const workoutId = req.params.id;
     const userId = req.session.user.id;
@@ -232,7 +232,7 @@ app.post('/delete-workout/:id', (req, res) => {
     
     db.query(sql, [workoutId, userId], (err, result) => {
         if (err) throw err;
-        res.redirect('/dashboard');
+        res.redirect('dashboard');
     });
 });
 
