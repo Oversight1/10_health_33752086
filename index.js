@@ -101,19 +101,65 @@ app.get('/login', (req, res) => {
 });
 
 // Login Logic (POST) 
-app.post('/login', (req, res) => {
-    // To make the default 'gold':'smiths' work with bcrypt, 
-    // we assume the DB has the hash, OR we handle legacy plain text for that one single user.
-    const { username, password } = req.body;
+// app.post('/login', (req, res) => {
+//     // To make the default 'gold':'smiths' work with bcrypt, 
+//     // we assume the DB has the hash, OR we handle legacy plain text for that one single user.
+//     const { username, password } = req.body;
     
 
+//     if(username === 'gold' && password === 'smiths') {
+//          req.session.user = { id: 1, username: 'gold' };
+//          return res.redirect('dashboard');
+//     }
+
+//     // Real DB lookup
+//     res.redirect('./'); 
+// });
+
+
+// Login Logic (POST) --- Updated Version
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    
+    // 1. Hardcoded check for 'gold' (Assignment Requirement)
     if(username === 'gold' && password === 'smiths') {
          req.session.user = { id: 1, username: 'gold' };
          return res.redirect('dashboard');
     }
 
-    // Real DB lookup
-    res.redirect('./'); 
+    // 2. Real DB lookup for everyone else
+    const sql = 'SELECT * FROM users WHERE username = ?';
+    
+    db.query(sql, [username], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.render('login', { error: 'System Error' });
+        }
+
+        // If user is not found in database
+        if (results.length === 0) {
+            return res.render('login', { error: 'Invalid username or password' });
+        }
+
+        const user = results[0];
+
+        // 3. Compare the typed password with the stored hash
+        bcrypt.compare(password, user.password, (err, isMatch) => {
+            if (err) {
+                 return res.render('login', { error: 'Error checking password' });
+            }
+            
+            if (isMatch) {
+                // Success! Save user to session
+                req.session.user = user;
+                // Redirect to dashboard (Relative path, no slash!)
+                res.redirect('dashboard'); 
+            } else {
+                // Password incorrect
+                res.render('login', { error: 'Invalid username or password' });
+            }
+        });
+    });
 });
 
 // Dashboard (Protected Route)
