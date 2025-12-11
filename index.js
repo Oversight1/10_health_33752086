@@ -23,10 +23,14 @@ app.use(session({
 
 // Database Connection 
 const db = mysql.createConnection({
-    host: process.env.HEALTH_HOST || '127.0.0.1', //For XAMPP database
-    user: process.env.HEALTH_USER || 'health_app',
-    password: process.env.HEALTH_PASSWORD || 'qwertyuiop',
-    database: process.env.HEALTH_DATABASE || 'health'
+    host: 'localhost',
+    user: 'tto001',      // YVM username
+    password: 'MasterKey*',     //VM database password
+    database: 'tto001'   //changed this from 'health' to 'tto001'
+    // host: process.env.HEALTH_HOST || '127.0.0.1', //For XAMPP database
+    // user: process.env.HEALTH_USER || 'health_app',
+    // password: process.env.HEALTH_PASSWORD || 'qwertyuiop',
+    // database: process.env.HEALTH_DATABASE || 'health'
 });
 
 db.connect((err) => {
