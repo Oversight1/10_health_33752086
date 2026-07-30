@@ -30,33 +30,33 @@ app.use((req, res, next) => {
 
 //-----------ROUTES-----------------------
 
-// 1. Advanced Home Page (Gamified Dashboard & Leaderboard)
+// 1. Advanced Home Page (Gamified Dashboard, Leaderboard & Charts)
 app.get('/', async (req, res) => {
     let stats = null;
     let leaderboard = [];
-    let level = 1;
-    let xp = 0;
-    let xpProgress = 0;
-    let nextLevelXp = 1000;
+    let level = 1, xp = 0, xpProgress = 0, nextLevelXp = 1000;
+    let chartLabels = [];
+    let chartData = [];
     
-    // 1. Dynamic Quote of the Day to motivate users
     const quotes = [
         "The only bad workout is the one that didn't happen.",
         "It never gets easier, you just get stronger.",
         "Discipline is choosing between what you want now and what you want most.",
         "You don't have to be extreme, just consistent.",
-        "Strive for progress, not perfection."
+        "Strive for progress, not perfection.",
+        "It always seems impossible until it's done.",
+        "You miss 100% of the shots you don't take.",
+        "The pain you feel today will be the strength you feel tomorrow.",
+        "Sweat is just fat crying.",
+        "Your body can stand almost anything. Just your mind that you have to convince."
     ];
-    // Picks a quote based on the current day of the year
     const quoteOfTheDay = quotes[new Date().getDay() % quotes.length];
 
     if (req.session.user) {
         try {
-            // 2. Fetch User's Personal Stats
+            // 1. Fetch User's Personal Stats
             const [userStats] = await db.query(
-                `SELECT COUNT(*) AS total_workouts, 
-                        SUM(duration_minutes) AS total_duration, 
-                        SUM(distance_km) AS total_distance 
+                `SELECT COUNT(*) AS total_workouts, SUM(duration_minutes) AS total_duration, SUM(distance_km) AS total_distance 
                  FROM fitness_logs WHERE user_id = ?`,
                 [req.session.user.id]
             );
@@ -64,30 +64,32 @@ app.get('/', async (req, res) => {
             if (userStats.length > 0 && userStats[0].total_workouts > 0) {
                 stats = userStats[0];
                 
-                // 3. The Leveling System Algorithm
-                // Earning XP: 10 XP per minute worked out + 50 XP per workout logged
+                // The Leveling System Algorithm
                 xp = (Number(stats.total_duration) * 10) + (Number(stats.total_workouts) * 50);
-                
-                // Calculate current level (Every 1000 XP = 1 Level)
                 level = Math.floor(xp / 1000) + 1;
-                nextLevelXp = level * 1000;
-                
-                // Calculate percentage for the UI progress bar
-                const currentLevelXp = xp % 1000; 
-                xpProgress = Math.round((currentLevelXp / 1000) * 100);
+                xpProgress = Math.round((xp % 1000) / 1000 * 100);
             }
 
-            // 4. Fetch the Global Leaderboard (Via SQL JOIN)
-            // Groups by user, joins tables to get usernames, and ranks by total minutes
+            // 2. Fetch Chart Data (Advanced SQL GROUP BY)
+            const [chartRows] = await db.query(
+                `SELECT activity_type, SUM(duration_minutes) as total_minutes 
+                 FROM fitness_logs 
+                 WHERE user_id = ? 
+                 GROUP BY activity_type`,
+                [req.session.user.id]
+            );
+            
+            // Format the SQL data into arrays for Chart.js
+            chartRows.forEach(row => {
+                chartLabels.push(row.activity_type);
+                chartData.push(row.total_minutes);
+            });
+
+            // 3. Fetch Global Leaderboard
             const [topUsers] = await db.query(
-                `SELECT u.username, 
-                        SUM(f.duration_minutes) AS total_minutes, 
-                        COUNT(f.id) AS total_workouts
-                 FROM users u
-                 JOIN fitness_logs f ON u.id = f.user_id
-                 GROUP BY u.id
-                 ORDER BY total_minutes DESC
-                 LIMIT 5`
+                `SELECT u.username, SUM(f.duration_minutes) AS total_minutes 
+                 FROM users u JOIN fitness_logs f ON u.id = f.user_id 
+                 GROUP BY u.id ORDER BY total_minutes DESC LIMIT 5`
             );
             leaderboard = topUsers;
 
@@ -96,9 +98,10 @@ app.get('/', async (req, res) => {
         }
     }
     
-    // Passes everything to the frontend
-    res.render('home', { stats, leaderboard, level, xp, xpProgress, quoteOfTheDay });
+    // Pass the new chart arrays to the frontend
+    res.render('home', { stats, leaderboard, level, xp, xpProgress, quoteOfTheDay, chartLabels, chartData });
 });
+
 //2. About Page
 app.get('/about', (req, res) => {
     res.render('about');

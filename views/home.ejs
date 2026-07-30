@@ -3,40 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Dashboard - Health Tracker</title>
-    <style>
-        /* UI Styling */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; color: #333; }
-        nav { background-color: #2c3e50; padding: 15px; text-align: center; }
-        nav a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        
-        /* Gamer style Header */
-        .profile-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .level-badge { background-color: #ffd700; color: #333; padding: 10px 20px; border-radius: 30px; font-weight: bold; font-size: 1.2rem; }
-        .progress-bar-bg { background-color: rgba(255,255,255,0.3); border-radius: 10px; width: 300px; height: 15px; margin-top: 10px; overflow: hidden; }
-        .progress-bar-fill { background-color: #00ff88; height: 100%; transition: width 0.5s ease; }
-
-        /* Dashboard Grid */
-        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        
-        /* Cards */
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .card-title { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-        
-        .stats-container { display: flex; gap: 15px; justify-content: space-between; }
-        .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; flex: 1; text-align: center; }
-        .stat-value { font-size: 2rem; font-weight: bold; color: #667eea; margin: 10px 0 0 0; }
-        
-        /* Leaderboard */
-        .leaderboard-list { list-style: none; padding: 0; margin: 0; }
-        .leaderboard-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .leaderboard-list li:last-child { border-bottom: none; }
-        .rank-1 { font-weight: bold; color: #d4af37; } /* Gold */
-        
-        .quote { font-style: italic; color: #666; text-align: center; padding: 20px; background: #eef2f5; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #667eea; }
-        .btn { display: inline-block; background-color: #667eea; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 20px; }
-        .btn:hover { background-color: #5a6fd6; }
-    </style>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <nav>
@@ -70,11 +37,9 @@
             </div>
 
             <div class="dashboard-grid">
-                <!-- Left Column: Quote & Personal Stats -->
+                <!-- Left Column: Stats & Chart -->
                 <div>
-                    <div class="quote">
-                        "<%= quoteOfTheDay %>"
-                    </div>
+                    <div class="quote">"<%= quoteOfTheDay %>"</div>
 
                     <div class="card">
                         <h2 class="card-title">Your Fitness Arsenal</h2>
@@ -95,8 +60,18 @@
                                 <div class="stat-value"><%= stats && stats.total_distance ? stats.total_distance : 0 %><span style="font-size: 1rem;">km</span></div>
                             </div>
                         </div>
-                        <a href="/add-log" class="btn">Log a New Workout</a>
+                        <a href="/add-log" class="btn" style="margin-top: 20px;">Log a New Workout</a>
                     </div>
+
+                    <!-- Distinction Feature: Interactive Chart.js Canvas -->
+                    <% if (chartLabels && chartLabels.length > 0) { %>
+                        <div class="card">
+                            <h2 class="card-title">Time by Activity</h2>
+                            <div style="position: relative; height: 250px; width: 100%; display: flex; justify-content: center;">
+                                <canvas id="activityChart"></canvas>
+                            </div>
+                        </div>
+                    <% } %>
                 </div>
 
                 <!-- Right Column: Global Leaderboard -->
@@ -122,7 +97,6 @@
             </div>
 
         <% } else { %>
-            <!-- Logged Out View -->
             <div style="text-align: center; margin-top: 100px;">
                 <h1>Welcome to the Health Tracker</h1>
                 <p>Level up your fitness. Compete with friends. Track your legacy.</p>
@@ -131,7 +105,35 @@
             </div>
         <% } %>
     </div>
+
+    <!-- Chart.js Initialization Script -->
+    <% if (user && chartLabels && chartLabels.length > 0) { %>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            // We use <%- %> to securely inject the backend arrays directly into the JavaScript
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: <%- JSON.stringify(chartLabels) %>,
+                    datasets: [{
+                        data: <%- JSON.stringify(chartData) %>,
+                        backgroundColor: [
+                            '#667eea', '#764ba2', '#00ff88', '#ff4c4c', '#ffd700', '#2196F3'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        </script>
+    <% } %>
 </body>
 </html>
-
-```
