@@ -110,7 +110,7 @@
     <% if (user && chartLabels && chartLabels.length > 0) { %>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-            // We use <%- %> to securely inject the backend arrays directly into the JavaScript
+            // We use <%- %> in this case to securely inject the backend arrays directly into the JavaScript
             const ctx = document.getElementById('activityChart').getContext('2d');
             new Chart(ctx, {
                 type: 'doughnut',

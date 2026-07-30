@@ -70,7 +70,7 @@ app.get('/', async (req, res) => {
                 xpProgress = Math.round((xp % 1000) / 1000 * 100);
             }
 
-            // 2. Fetch Chart Data (Advanced SQL GROUP BY)
+            // 2. Fetches Chart Data (Advanced SQL GROUP BY)
             const [chartRows] = await db.query(
                 `SELECT activity_type, SUM(duration_minutes) as total_minutes 
                  FROM fitness_logs 
@@ -139,7 +139,7 @@ app.post('/register', async (req, res) => {
 });
 
 // 3. Form: Process Registration
-// --- SHOW LOGIN & REGISTER PAGES ---
+// --- SHOWS THELOGIN AND REGISTER PAGES ---
 app.get('/login', (req, res) => {
     // Render the login.ejs file and pass a null error by default
     res.render('login', { error: null });
@@ -160,7 +160,7 @@ app.post('/register', async (req, res) => {
         return res.render('register', { error: 'Invalid email format. Please include an "@" and a domain.' });
     }
     
-    // Bulletproof Explicit Password Validation
+    // Explicit Password Validation
     const isLongEnough = password.length >= 8;
     const hasLetter = /[a-zA-Z]/.test(password);
     const hasNumber = /\d/.test(password);

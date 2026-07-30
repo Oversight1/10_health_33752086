@@ -37,4 +37,34 @@ Ensure you have the following installed:
 ### 2. Clone the Repository
 ```bash
 git clone <your-repository-url>
-cd health-tracker
+cd 10_health_33752086
+
+
+
+### 3. Install Dependencies
+
+```bash
+npm install
+
+### 4. Database Setup
+Open your MySQL client and create a database:
+
+CREATE DATABASE health_tracker_db;
+USE health_tracker_db;
+
+Run your table creation scripts for users and fitness_logs (ensuring proper foreign key relationships referencing user_id).
+
+### 5. Configure Environment Variables
+Create a configuration file or update your database connection pool settings with your local MySQL credentials:
+
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_mysql_password
+DB_NAME=health
+SESSION_SECRET=your_super_secret_key
+
+
+### 6. Run the Application
+Start your server using Node:
+
+node index.js
