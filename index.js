@@ -30,9 +30,34 @@ app.use((req, res, next) => {
 
 //-----------ROUTES-----------------------
 
-//1. Home Page
-app.get('/', (req, res) => {
-    res.render('home');
+//1. Home Page (The Dashboard)
+app.get('/', async (req, res) => {
+    let stats = null;
+
+    // If the user is logged in, fetch their stats from the database
+    if (req.session.user) {
+        try {
+            // Using SQL aggregate functions to calculate totals
+            const [rows] = await db.query(
+                `SELECT 
+                    COUNT(*) AS total_workouts, 
+                    SUM(duration_minutes) AS total_duration, 
+                    SUM(distance_km) AS total_distance 
+                 FROM fitness_logs 
+                 WHERE user_id = ?`,
+                [req.session.user.id]
+            );
+
+            if (rows.length > 0) {
+                stats = rows[0];
+            }
+        } catch (err) {
+            console.error('Error fetching dashboard stats:', err);
+        }
+    }
+    
+    // Send the stats to the home.ejs file
+    res.render('home', { stats });
 });
 
 //2. About Page
@@ -149,7 +174,7 @@ app.get('/search', async (req, res) => {
     res.render('search', { keyword, results });
 });
 
-//6. Delete Fitness Log (Full CRUD feature cycle)
+// 6. Delete Fitness Log (Full CRUD completion)
 app.post('/delete-log/:id', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     
@@ -157,12 +182,12 @@ app.post('/delete-log/:id', async (req, res) => {
     const userId = req.session.user.id;
 
     try {
-        // Secure query: ensures a user can only delete their own logs
+        // Ensure users can only delete their own logs for security
         await db.query('DELETE FROM fitness_logs WHERE id = ? AND user_id = ?', [logId, userId]);
         res.redirect('/search');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Error deleting workout log');
+        res.status(500).send('Error deleting log from database');
     }
 });
 
