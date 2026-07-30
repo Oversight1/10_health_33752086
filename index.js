@@ -150,19 +150,25 @@ app.get('/register', (req, res) => {
     res.render('register', { error: null });
 });
 
+
 app.post('/register', async (req, res) => {
     const { username, password, email } = req.body;
     
-    // NEW: Validate Email Format
+    // Validate Email Format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email && !emailRegex.test(email)) {
         return res.render('register', { error: 'Invalid email format. Please include an "@" and a domain.' });
     }
     
-    // NEW: Validate Password Strength (Min 8 chars, 1 letter, 1 number)
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-        return res.render('register', { error: 'Password must be at least 8 characters long and contain at least one letter and one number.' });
+    // Bulletproof Explicit Password Validation
+    const isLongEnough = password.length >= 8;
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+
+    if (!isLongEnough || !hasLetter || !hasNumber) {
+        return res.render('register', { 
+            error: 'Password must be at least 8 characters long and contain at least one letter and one number.' 
+        });
     }
 
     try {
@@ -185,6 +191,7 @@ app.post('/register', async (req, res) => {
         res.render('register', { error: 'An error occurred during registration.' });
     }
 });
+
 
 // --- PROCESS LOGIN ---
 app.post('/login', async (req, res) => {
