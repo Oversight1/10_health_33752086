@@ -18,7 +18,7 @@
             <h2 class="card-title">Create an Account</h2>
             
             <% if (error) { %>
-                <p style="color: #ff4c4c; font-weight: bold; background: #ffe6e6; padding: 10px; border-radius: 5px;"><%= error %></p>
+                <p style="color: #c62828; font-weight: bold; background: #ffe6e6; border-left: 4px solid #ff4c4c; padding: 10px; border-radius: 4px;">⚠️ <%= error %></p>
             <% } %>
 
             <form action="/register" method="POST">
@@ -28,13 +28,14 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="email">Email (Optional):</label>
-                    <input type="email" name="email">
+                    <label for="email">Email:</label>
+                    <input type="email" name="email" placeholder="you@example.com" required>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password:</label>
                     <input type="password" name="password" required>
+                    <small style="color: #666; display: block; margin-top: 5px;">Must be at least 8 characters, with 1 letter and 1 number.</small>
                 </div>
                 
                 <button type="submit" class="btn" style="width: 100%;">Sign Up</button>

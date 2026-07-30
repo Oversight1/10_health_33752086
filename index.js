@@ -138,34 +138,82 @@ app.post('/register', async (req, res) => {
     }
 });
 
-//3. Login System
+// 3. Form: Process Registration
+// --- SHOW LOGIN & REGISTER PAGES ---
 app.get('/login', (req, res) => {
+    // Render the login.ejs file and pass a null error by default
     res.render('login', { error: null });
 });
 
-app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-        const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-        
-        if (users.length > 0) {
-            const user = users[0];
-            
-            // 1. Secure check: compare typed password against the hashed database password
-            const isBcryptMatch = await bcrypt.compare(password, user.password);
-            
-            // 2. Safe fallback: in case the marker manually inserts a plain-text test user
-            const isPlainTextMatch = (password === user.password);
+app.get('/register', (req, res) => {
+    // Render the register.ejs file and pass a null error by default
+    res.render('register', { error: null });
+});
 
-            if (isBcryptMatch || isPlainTextMatch) {
-                req.session.user = { id: user.id, username: user.username };
-                return res.redirect('/');
-            }
+app.post('/register', async (req, res) => {
+    const { username, password, email } = req.body;
+    
+    // NEW: Validate Email Format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email && !emailRegex.test(email)) {
+        return res.render('register', { error: 'Invalid email format. Please include an "@" and a domain.' });
+    }
+    
+    // NEW: Validate Password Strength (Min 8 chars, 1 letter, 1 number)
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+        return res.render('register', { error: 'Password must be at least 8 characters long and contain at least one letter and one number.' });
+    }
+
+    try {
+        // Check if username already exists
+        const [existing] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+        if (existing.length > 0) {
+            return res.render('register', { error: 'Username already taken. Please choose another.' });
         }
-        res.render('login', { error: 'Invalid username or password' });
+
+        // Hash the password and save the user
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await db.query(
+            'INSERT INTO users (username, password, email) VALUES (?, ?, ?)',
+            [username, hashedPassword, email]
+        );
+        
+        res.redirect('/login');
     } catch (err) {
         console.error(err);
-        res.render('login', { error: 'Database connection error' });
+        res.render('register', { error: 'An error occurred during registration.' });
+    }
+});
+
+// --- PROCESS LOGIN ---
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    
+    try {
+        // Find user in database
+        const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+        
+        if (users.length === 0) {
+            return res.render('login', { error: 'Invalid username or password.' });
+        }
+
+        const user = users[0];
+
+        // Compare password hash
+        const match = await bcrypt.compare(password, user.password);
+        
+        if (!match) {
+            return res.render('login', { error: 'Invalid username or password.' });
+        }
+
+        // Save user session
+        req.session.user = { id: user.id, username: user.username };
+        res.redirect('/');
+        
+    } catch (err) {
+        console.error(err);
+        res.render('login', { error: 'An error occurred during login.' });
     }
 });
 
@@ -180,7 +228,6 @@ app.get('/add-log', async (req, res) => {
     
     let level = 1, xp = 0, xpProgress = 0;
     try {
-        // Fetch current stats to display the progress bar
         const [userStats] = await db.query(
             `SELECT COUNT(*) AS total_workouts, SUM(duration_minutes) AS total_duration FROM fitness_logs WHERE user_id = ?`,
             [req.session.user.id]
@@ -190,29 +237,19 @@ app.get('/add-log', async (req, res) => {
             level = Math.floor(xp / 1000) + 1;
             xpProgress = Math.round((xp % 1000) / 1000 * 100);
         }
-    } catch (err) {
-        console.error(err);
-    }
+    } catch (err) { console.error(err); }
 
-    res.render('add-log', { message: null, earnedXp: null, level, xp, xpProgress });
+    // Added error: null to the render
+    res.render('add-log', { error: null, message: null, earnedXp: null, level, xp, xpProgress });
 });
 
 app.post('/add-log', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     
     const { activity_type, duration_minutes, distance_km, log_date, notes } = req.body;
+    
     try {
-        // 1. Save the new workout to the database
-        await db.query(
-            `INSERT INTO fitness_logs (user_id, activity_type, duration_minutes, distance_km, log_date, notes) 
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [req.session.user.id, activity_type, duration_minutes, distance_km || null, log_date, notes]
-        );
-        
-        // 2. Calculate how much XP they earned JUST for this workout (10 XP per min + 50 base XP)
-        const earnedXp = (Number(duration_minutes) * 10) + 50;
-
-        // 3. Fetch their NEW total stats to update the progress bar
+        // Calculate current stats to display the header
         let level = 1, xp = 0, xpProgress = 0;
         const [userStats] = await db.query(
             `SELECT COUNT(*) AS total_workouts, SUM(duration_minutes) AS total_duration FROM fitness_logs WHERE user_id = ?`,
@@ -224,14 +261,43 @@ app.post('/add-log', async (req, res) => {
             xpProgress = Math.round((xp % 1000) / 1000 * 100);
         }
 
+        // NEW: Validation for absurd numbers (Anything over 12 hours / 720 minutes)
+        if (Number(duration_minutes) > 720) {
+            return res.render('add-log', { 
+                error: "Time to go to the Olympics then! 🏅 (Please enter a realistic duration under 12 hours)", 
+                message: null, 
+                earnedXp: null, 
+                level, xp, xpProgress 
+            });
+        }
+
+        // 1. Save to database
+        await db.query(
+            `INSERT INTO fitness_logs (user_id, activity_type, duration_minutes, distance_km, log_date, notes) VALUES (?, ?, ?, ?, ?, ?)`,
+            [req.session.user.id, activity_type, duration_minutes, distance_km || null, log_date, notes]
+        );
+        
+        // 2. Calculate XP & Fetch Updated Stats
+        const earnedXp = (Number(duration_minutes) * 10) + 50;
+        const [newStats] = await db.query(
+            `SELECT COUNT(*) AS total_workouts, SUM(duration_minutes) AS total_duration FROM fitness_logs WHERE user_id = ?`,
+            [req.session.user.id]
+        );
+        if (newStats.length > 0 && newStats[0].total_workouts > 0) {
+            xp = (Number(newStats[0].total_duration) * 10) + (Number(newStats[0].total_workouts) * 50);
+            level = Math.floor(xp / 1000) + 1;
+            xpProgress = Math.round((xp % 1000) / 1000 * 100);
+        }
+
         res.render('add-log', { 
+            error: null, // Ensure error is null on success
             message: 'Workout logged successfully!', 
             earnedXp: earnedXp,
             level, xp, xpProgress 
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Error saving data to database');
+        res.status(500).send('Error saving data');
     }
 });
 
