@@ -30,36 +30,75 @@ app.use((req, res, next) => {
 
 //-----------ROUTES-----------------------
 
-//1. Home Page (The Dashboard)
+// 1. Advanced Home Page (Gamified Dashboard & Leaderboard)
 app.get('/', async (req, res) => {
     let stats = null;
+    let leaderboard = [];
+    let level = 1;
+    let xp = 0;
+    let xpProgress = 0;
+    let nextLevelXp = 1000;
+    
+    // 1. Dynamic Quote of the Day to motivate users
+    const quotes = [
+        "The only bad workout is the one that didn't happen.",
+        "It never gets easier, you just get stronger.",
+        "Discipline is choosing between what you want now and what you want most.",
+        "You don't have to be extreme, just consistent.",
+        "Strive for progress, not perfection."
+    ];
+    // Picks a quote based on the current day of the year
+    const quoteOfTheDay = quotes[new Date().getDay() % quotes.length];
 
-    // If the user is logged in, fetch their stats from the database
     if (req.session.user) {
         try {
-            // Using SQL aggregate functions to calculate totals
-            const [rows] = await db.query(
-                `SELECT 
-                    COUNT(*) AS total_workouts, 
-                    SUM(duration_minutes) AS total_duration, 
-                    SUM(distance_km) AS total_distance 
-                 FROM fitness_logs 
-                 WHERE user_id = ?`,
+            // 2. Fetch User's Personal Stats
+            const [userStats] = await db.query(
+                `SELECT COUNT(*) AS total_workouts, 
+                        SUM(duration_minutes) AS total_duration, 
+                        SUM(distance_km) AS total_distance 
+                 FROM fitness_logs WHERE user_id = ?`,
                 [req.session.user.id]
             );
 
-            if (rows.length > 0) {
-                stats = rows[0];
+            if (userStats.length > 0 && userStats[0].total_workouts > 0) {
+                stats = userStats[0];
+                
+                // 3. The Leveling System Algorithm
+                // Earning XP: 10 XP per minute worked out + 50 XP per workout logged
+                xp = (Number(stats.total_duration) * 10) + (Number(stats.total_workouts) * 50);
+                
+                // Calculate current level (Every 1000 XP = 1 Level)
+                level = Math.floor(xp / 1000) + 1;
+                nextLevelXp = level * 1000;
+                
+                // Calculate percentage for the UI progress bar
+                const currentLevelXp = xp % 1000; 
+                xpProgress = Math.round((currentLevelXp / 1000) * 100);
             }
+
+            // 4. Fetch the Global Leaderboard (Via SQL JOIN)
+            // Groups by user, joins tables to get usernames, and ranks by total minutes
+            const [topUsers] = await db.query(
+                `SELECT u.username, 
+                        SUM(f.duration_minutes) AS total_minutes, 
+                        COUNT(f.id) AS total_workouts
+                 FROM users u
+                 JOIN fitness_logs f ON u.id = f.user_id
+                 GROUP BY u.id
+                 ORDER BY total_minutes DESC
+                 LIMIT 5`
+            );
+            leaderboard = topUsers;
+
         } catch (err) {
-            console.error('Error fetching dashboard stats:', err);
+            console.error('Error fetching advanced dashboard data:', err);
         }
     }
     
-    // Send the stats to the home.ejs file
-    res.render('home', { stats });
+    // Passes everything to the frontend
+    res.render('home', { stats, leaderboard, level, xp, xpProgress, quoteOfTheDay });
 });
-
 //2. About Page
 app.get('/about', (req, res) => {
     res.render('about');
@@ -132,10 +171,27 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-//4. Form: Log Activity (Stores in MySQL)
-app.get('/add-log', (req, res) => {
+// 4. Form: Log Activity (Stores in MySQL & Calculates XP)
+app.get('/add-log', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
-    res.render('add-log', { message: null });
+    
+    let level = 1, xp = 0, xpProgress = 0;
+    try {
+        // Fetch current stats to display the progress bar
+        const [userStats] = await db.query(
+            `SELECT COUNT(*) AS total_workouts, SUM(duration_minutes) AS total_duration FROM fitness_logs WHERE user_id = ?`,
+            [req.session.user.id]
+        );
+        if (userStats.length > 0 && userStats[0].total_workouts > 0) {
+            xp = (Number(userStats[0].total_duration) * 10) + (Number(userStats[0].total_workouts) * 50);
+            level = Math.floor(xp / 1000) + 1;
+            xpProgress = Math.round((xp % 1000) / 1000 * 100);
+        }
+    } catch (err) {
+        console.error(err);
+    }
+
+    res.render('add-log', { message: null, earnedXp: null, level, xp, xpProgress });
 });
 
 app.post('/add-log', async (req, res) => {
@@ -143,12 +199,33 @@ app.post('/add-log', async (req, res) => {
     
     const { activity_type, duration_minutes, distance_km, log_date, notes } = req.body;
     try {
+        // 1. Save the new workout to the database
         await db.query(
             `INSERT INTO fitness_logs (user_id, activity_type, duration_minutes, distance_km, log_date, notes) 
              VALUES (?, ?, ?, ?, ?, ?)`,
             [req.session.user.id, activity_type, duration_minutes, distance_km || null, log_date, notes]
         );
-        res.render('add-log', { message: 'Fitness achievement logged successfully!' });
+        
+        // 2. Calculate how much XP they earned JUST for this workout (10 XP per min + 50 base XP)
+        const earnedXp = (Number(duration_minutes) * 10) + 50;
+
+        // 3. Fetch their NEW total stats to update the progress bar
+        let level = 1, xp = 0, xpProgress = 0;
+        const [userStats] = await db.query(
+            `SELECT COUNT(*) AS total_workouts, SUM(duration_minutes) AS total_duration FROM fitness_logs WHERE user_id = ?`,
+            [req.session.user.id]
+        );
+        if (userStats.length > 0 && userStats[0].total_workouts > 0) {
+            xp = (Number(userStats[0].total_duration) * 10) + (Number(userStats[0].total_workouts) * 50);
+            level = Math.floor(xp / 1000) + 1;
+            xpProgress = Math.round((xp % 1000) / 1000 * 100);
+        }
+
+        res.render('add-log', { 
+            message: 'Workout logged successfully!', 
+            earnedXp: earnedXp,
+            level, xp, xpProgress 
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send('Error saving data to database');

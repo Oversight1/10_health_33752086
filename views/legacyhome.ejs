@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Health Tracker - Home</title>
+</head>
+<body>
+<nav>
+    <a href="/">Home</a> | <a href="/about">About</a> 
+    <% if (user) { %>
+        | <a href="/add-log">Log Workout</a> | <a href="/search">Search Logs</a> | <a href="/logout">Logout (<%= user.username %>)</a>
+    <% } else { %>
+        | <a href="/login">Login</a> | <a href="/register">Register</a>
+    <% } %>
+</nav>
+
+<hr>
+
+<% if (user) { %>
+    <h1>Welcome back, <%= user.username %>!</h1>
+    <p>Here is your all-time fitness summary:</p>
+
+    <!-- NEW Feature: Dashboard Cards -->
+    <div style="display: flex; gap: 20px; margin-top: 20px;">
+        <div style="border: 2px solid #4CAF50; padding: 20px; border-radius: 10px; width: 150px; text-align: center;">
+            <h3 style="margin: 0; color: #555;">🏃‍♂️ Workouts</h3>
+            <p style="font-size: 32px; font-weight: bold; margin: 10px 0 0 0;">
+                <%= stats && stats.total_workouts ? stats.total_workouts : 0 %>
+            </p>
+        </div>
+        
+        <div style="border: 2px solid #2196F3; padding: 20px; border-radius: 10px; width: 150px; text-align: center;">
+            <h3 style="margin: 0; color: #555;">⏱️ Minutes</h3>
+            <p style="font-size: 32px; font-weight: bold; margin: 10px 0 0 0;">
+                <%= stats && stats.total_duration ? stats.total_duration : 0 %>
+            </p>
+        </div>
+        
+        <div style="border: 2px solid #FF9800; padding: 20px; border-radius: 10px; width: 150px; text-align: center;">
+            <h3 style="margin: 0; color: #555;">📏 Distance</h3>
+            <p style="font-size: 32px; font-weight: bold; margin: 10px 0 0 0;">
+                <%= stats && stats.total_distance ? stats.total_distance : 0 %> <span style="font-size: 16px;">km</span>
+            </p>
+        </div>
+    </div>
+
+    <br>
+    <a href="/add-log"><button style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Log a New Workout</button></a>
+
+<% } else { %>
+    <h1>Welcome to the Health Tracker</h1>
+    <p>Your personal companion for logging and analyzing your fitness journey.</p>
+    <p>Please <a href="/login">Login</a> or <a href="/register">Register</a> to view your dashboard.</p>
+<% } %>
+</body>
+</html>

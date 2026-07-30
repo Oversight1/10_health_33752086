@@ -3,14 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>About - Health Tracker</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <nav>
-        <a href="/">Home</a> | <a href="/about">About</a> | <a href="/search">Search Logs</a>
+        <a href="/">Dashboard</a>
+        <a href="/about">About</a>
+        <% if (user) { %>
+            <a href="/add-log">Log Workout</a>
+            <a href="/search">Search Logs</a>
+            <a href="/logout">Logout</a>
+        <% } else { %>
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+        <% } %>
     </nav>
-    <hr>
-    <h1>About Health Tracker</h1>
-    <p>This web application allows users to monitor their health achievements, log fitness activities, and search through database records.</p>
-    <p>Built using <strong>Node.js, Express, EJS, and MySQL</strong> for Dynamic Web Apps.</p>
+
+    <div class="container">
+        <div class="card" style="max-width: 800px; margin: 40px auto; line-height: 1.6;">
+            <h2 class="card-title">About Health Tracker</h2>
+            
+            <p style="font-size: 1.1rem; color: #555;">
+                Welcome to the <strong>Health Tracker</strong>, your personal companion for logging and analysing your fitness journey.
+            </p>
+
+            <h3 style="color: #667eea; margin-top: 30px;">Our Mission</h3>
+            <p>
+                We believe that consistency is the key to achieving any fitness goal. This platform was built to help you track your workouts, visualise your progress, and stay motivated through gamification and community leaderboards.
+            </p>
+
+            <h3 style="color: #667eea; margin-top: 30px;">Core Features</h3>
+            <ul style="padding-left: 20px; color: #444;">
+                <li style="margin-bottom: 10px;"><strong>Secure Logging:</strong> Safely record your activity types, durations, and distances with encrypted accounts.</li>
+                <li style="margin-bottom: 10px;"><strong>Dynamic Dashboard:</strong> Watch your stats grow in real-time with our intelligent aggregation engine.</li>
+                <li style="margin-bottom: 10px;"><strong>Level Up:</strong> Earn XP for every minute you exercise and climb the ranks.</li>
+                <li style="margin-bottom: 10px;"><strong>Global Leaderboard:</strong> See how you stack up against other users in the community.</li>
+            </ul>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <% if (user) { %>
+                    <a href="/" class="btn">Return to Dashboard</a>
+                <% } else { %>
+                    <a href="/register" class="btn" style="margin-right: 10px;">Start Your Journey Today</a>
+                    <a href="/login" class="btn" style="background-color: #2c3e50;">Login</a>
+                <% } %>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

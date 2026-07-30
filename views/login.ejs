@@ -3,32 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>Login - Health Tracker</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <nav>
-        <a href="/">Home</a> | <a href="/about">About</a>
+        <a href="/">Dashboard</a>
+        <a href="/about">About</a>
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
     </nav>
-    <hr>
-    <h1>User Login</h1>
 
-    <% if (error) { %>
-        <p style="color: red;"><%= error %></p>
-    <% } %>
+    <div class="container">
+        <div class="card" style="max-width: 400px; margin: 50px auto;">
+            <h2 class="card-title">Login</h2>
+            
+            <% if (error) { %>
+                <p style="color: #ff4c4c; font-weight: bold; background: #ffe6e6; padding: 10px; border-radius: 5px;"><%= error %></p>
+            <% } %>
 
-    <form action="/login" method="POST">
-        <div>
-            <label for="username">Username:</label><br>
-            <input type="text" id="username" name="username" required>
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%;">Sign In</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 20px;">
+                Don't have an account? <a href="/register" style="color: #667eea; font-weight: bold; text-decoration: none;">Register here</a>
+            </p>
         </div>
-        <br>
-        <div>
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <br>
-        <button type="submit">Login</button>
-    </form>
-
-    <p><small>Default credentials: <b>gold</b> / <b>smiths123ABC$</b></small></p>
+    </div>
 </body>
 </html>
