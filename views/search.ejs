@@ -21,17 +21,24 @@
     <% if (keyword) { %>
         <h2>Search Results for "<%= keyword %>":</h2>
         <% if (results && results.length > 0) { %>
-            <ul>
-                <% results.forEach(log => { %>
-                    <li>
-                        <strong><%= log.activity_type %></strong> - <%= log.duration_minutes %> mins 
-                        <% if (log.distance_km) { %> (<%= log.distance_km %> km) <% } %>
-                        <br>
-                        <em>Date: <%= new Date(log.log_date).toLocaleDateString() %></em>
-                        <p><%= log.notes %></p>
-                    </li>
-                <% }); %>
-            </ul>
+        <ul>
+            <% results.forEach(log => { %>
+                <li style="margin-bottom: 20px;">
+                    <strong><%= log.activity_type %></strong> - <%= log.duration_minutes %> mins 
+                    <% if (log.distance_km) { %> (<%= log.distance_km %> km) <% } %>
+                    <br>
+                    <em>Date: <%= new Date(log.log_date).toLocaleDateString() %></em>
+                    <p><%= log.notes %></p>
+
+                    <!---NEW FEATURE: Only show delete button if the logged-in user owns this log -->
+                    <% if (user && user.id === log.user_id) { %>
+                        <form action="/delete-log/<%= log.id %>" method="POST" style="display:inline;">
+                            <button type="submit" onclick="return confirm('Are you sure you want to delete this log?');" style="background-color: #ff4c4c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Delete</button>
+                        </form>
+                    <% } %>
+                </li>
+            <% }); %>
+        </ul>
         <% } else { %>
             <p>No achievements found matching your search.</p>
         <% } %>

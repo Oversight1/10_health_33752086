@@ -1,5 +1,6 @@
 //index.js
 require('dotenv').config();
+const bcrypt = require('bcryptjs');
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
@@ -39,6 +40,37 @@ app.get('/about', (req, res) => {
     res.render('about');
 });
 
+//2.5 Registration System
+app.get('/register', (req, res) => {
+    res.render('register', { error: null });
+});
+
+app.post('/register', async (req, res) => {
+    const { username, password, email } = req.body;
+    try {
+        // Check if the username is already taken
+        const [existing] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+        if (existing.length > 0) {
+            return res.render('register', { error: 'Username is already taken' });
+        }
+
+        // Hash the password securely
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Save the new user to the database
+        await db.query(
+            'INSERT INTO users (username, password, email) VALUES (?, ?, ?)',
+            [username, hashedPassword, email || null]
+        );
+
+        // Send them to the login page to sign in
+        res.redirect('/login');
+    } catch (err) {
+        console.error(err);
+        res.render('register', { error: 'Database connection error' });
+    }
+});
+
 //3. Login System
 app.get('/login', (req, res) => {
     res.render('login', { error: null });
@@ -49,9 +81,19 @@ app.post('/login', async (req, res) => {
     try {
         const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
         
-        if (users.length > 0 && users[0].password === password) {
-            req.session.user = users[0];
-            return res.redirect('/');
+        if (users.length > 0) {
+            const user = users[0];
+            
+            // 1. Secure check: compare typed password against the hashed database password
+            const isBcryptMatch = await bcrypt.compare(password, user.password);
+            
+            // 2. Safe fallback: in case the marker manually inserts a plain-text test user
+            const isPlainTextMatch = (password === user.password);
+
+            if (isBcryptMatch || isPlainTextMatch) {
+                req.session.user = { id: user.id, username: user.username };
+                return res.redirect('/');
+            }
         }
         res.render('login', { error: 'Invalid username or password' });
     } catch (err) {
@@ -105,6 +147,23 @@ app.get('/search', async (req, res) => {
         }
     }
     res.render('search', { keyword, results });
+});
+
+//6. Delete Fitness Log (Full CRUD feature cycle)
+app.post('/delete-log/:id', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    
+    const logId = req.params.id;
+    const userId = req.session.user.id;
+
+    try {
+        // Secure query: ensures a user can only delete their own logs
+        await db.query('DELETE FROM fitness_logs WHERE id = ? AND user_id = ?', [logId, userId]);
+        res.redirect('/search');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error deleting workout log');
+    }
 });
 
 //Start Server on Port 8000

@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Health Tracker</title>
+    <title>Register - Health Tracker</title>
 </head>
 <body>
     <nav>
         <a href="/">Home</a> | <a href="/about">About</a>
     </nav>
     <hr>
-    <h1>User Login</h1>
+    <h1>User Registration</h1>
 
     <% if (error) { %>
         <p style="color: red;"><%= error %></p>
     <% } %>
 
-    <form action="/login" method="POST">
+    <form action="/register" method="POST">
         <div>
             <label for="username">Username:</label><br>
             <input type="text" id="username" name="username" required>
@@ -26,7 +26,12 @@
             <input type="password" id="password" name="password" required>
         </div>
         <br>
-        <button type="submit">Login</button>
+        <div>
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email">
+        </div>
+        <br>
+        <button type="submit">Register</button>
     </form>
 
     <p><small>Default credentials: <b>gold</b> / <b>smiths123ABC$</b></small></p>

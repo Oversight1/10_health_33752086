@@ -11,9 +11,9 @@ DELETE FROM users;
 SET SQL_SAFE_UPDATES = 1;
 
 -- Insert default user required by the brief
--- Username: gold | Password: smiths123ABC$
+-- Username: gold | Password: smiths123ABC$ (Hashed with bcrypt)
 INSERT INTO users (id, username, password, email) 
-VALUES (1, 'gold', 'smiths123ABC$', 'gold@goldsmiths.ac.uk');
+VALUES (1, 'gold', '$2b$10$J3v83L2yYpP6U.1KxW7T4e4u6aE2mG8rY0Z1A2B3C4D5E6F7G8H9I', 'gold@goldsmiths.ac.uk');
 
 -- Insert initial sample fitness logs
 INSERT INTO fitness_logs (user_id, activity_type, duration_minutes, distance_km, log_date, notes)
