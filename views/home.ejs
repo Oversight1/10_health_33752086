@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Health Tracker - Home</title>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a> | 
+        <a href="/about">About</a> | 
+        <a href="/search">Search Logs</a>
+        <% if (user) { %>
+            | <a href="/add-log">Log Workout</a> 
+            | <a href="/logout">Logout (<%= user.username %>)</a>
+        <% } else { %>
+            | <a href="/login">Login</a>
+        <% } %>
+    </nav>
+    <hr>
+    <h1>Welcome to Health & Fitness Tracker</h1>
+    <p>Track your workouts, record your achievements, and reach your fitness goals.</p>
+    
+    <% if (!user) { %>
+        <p>Please <a href="/login">login</a> to start logging your fitness activities.</p>
+    <% } else { %>
+        <p>You are logged in as <strong><%= user.username %></strong>. Go to <a href="/add-log">Log Workout</a> to add data.</p>
+    <% } %>
+</body>
+</html>

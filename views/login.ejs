@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Health Tracker</title>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a> | <a href="/about">About</a>
+    </nav>
+    <hr>
+    <h1>User Login</h1>
+
+    <% if (error) { %>
+        <p style="color: red;"><%= error %></p>
+    <% } %>
+
+    <form action="/login" method="POST">
+        <div>
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <br>
+        <div>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <br>
+        <button type="submit">Login</button>
+    </form>
+
+    <p><small>Default credentials: <b>gold</b> / <b>smiths123ABC$</b></small></p>[cite: 1]
+</body>
+</html>

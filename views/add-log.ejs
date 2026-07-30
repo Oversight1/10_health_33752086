@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log Workout - Health Tracker</title>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a> | 
+        <a href="/about">About</a> | 
+        <a href="/search">Search Logs</a> | 
+        <a href="/add-log">Log Workout</a> | 
+        <a href="/logout">Logout</a>
+    </nav>
+    <hr>
+    <h1>Log a Fitness Achievement</h1>
+
+    <% if (message) { %>
+        <p style="color: green;"><%= message %></p>
+    <% } %>
+
+    <form action="/add-log" method="POST">
+        <div>
+            <label for="activity_type">Activity Type:</label><br>
+            <input type="text" id="activity_type" name="activity_type" placeholder="e.g. Running, Swimming, Cycling" required>
+        </div>
+        <br>
+        <div>
+            <label for="duration_minutes">Duration (minutes):</label><br>
+            <input type="number" id="duration_minutes" name="duration_minutes" required>
+        </div>
+        <br>
+        <div>
+            <label for="distance_km">Distance (km - optional):</label><br>
+            <input type="number" step="0.01" id="distance_km" name="distance_km">
+        </div>
+        <br>
+        <div>
+            <label for="log_date">Date:</label><br>
+            <input type="date" id="log_date" name="log_date" required>
+        </div>
+        <br>
+        <div>
+            <label for="notes">Notes / Details:</label><br>
+            <textarea id="notes" name="notes" rows="4" cols="40"></textarea>
+        </div>
+        <br>
+        <button type="submit">Save Log</button>
+    </form>
+</body>
+</html>

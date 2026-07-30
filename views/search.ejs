@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search - Health Tracker</title>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a> | <a href="/about">About</a> | <a href="/search">Search Logs</a>
+    </nav>
+    <hr>
+    <h1>Search Fitness Achievements</h1>
+
+    <form action="/search" method="GET">
+        <input type="text" name="q" value="<%= keyword %>" placeholder="Search by activity or keyword...">
+        <button type="submit">Search</button>
+    </form>
+
+    <hr>
+
+    <% if (keyword) { %>
+        <h2>Search Results for "<%= keyword %>":</h2>
+        <% if (results && results.length > 0) { %>
+            <ul>
+                <% results.forEach(log => { %>
+                    <li>
+                        <strong><%= log.activity_type %></strong> - <%= log.duration_minutes %> mins 
+                        <% if (log.distance_km) { %> (<%= log.distance_km %> km) <% } %>
+                        <br>
+                        <em>Date: <%= new Date(log.log_date).toLocaleDateString() %></em>
+                        <p><%= log.notes %></p>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } else { %>
+            <p>No achievements found matching your search.</p>
+        <% } %>
+    <% } %>
+</body>
+</html>
